@@ -18,6 +18,10 @@ func InitDb() error {
 	if err != nil {
 		return err
 	}
+	err = Db.AutoMigrate(&model.Listing{})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

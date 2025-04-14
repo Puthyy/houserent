@@ -1,0 +1,48 @@
+package db
+
+import (
+	"houserent/model"
+)
+
+// AddListing 添加房源
+func AddListing(listing *model.Listing) error {
+	return Db.Create(listing).Error
+}
+
+// UpdateListing 更新房源信息
+func UpdateListing(listing *model.Listing) error {
+	return Db.Save(listing).Error
+}
+
+// DeleteListing 删除房源
+func DeleteListing(listing *model.Listing) error {
+	return Db.Delete(listing).Error
+}
+
+// FindListingByID 通过ID查找房源
+func FindListingByID(id uint) (*model.Listing, error) {
+	var listing model.Listing
+	err := Db.First(&listing, id).Error
+	return &listing, err
+}
+
+// FindListingsByLandlordID 查找房东的所有房源
+func FindListingsByLandlordID(landlordID uint) ([]model.Listing, error) {
+	var listings []model.Listing
+	err := Db.Where("landlord_id = ?", landlordID).Find(&listings).Error
+	return listings, err
+}
+
+// FindAvailableListings 查找所有可用房源
+func FindAvailableListings() ([]model.Listing, error) {
+	var listings []model.Listing
+	err := Db.Where("status = ?", "available").Find(&listings).Error
+	return listings, err
+}
+
+// SearchListings 搜索房源
+func SearchListings(query map[string]interface{}) ([]model.Listing, error) {
+	var listings []model.Listing
+	err := Db.Where(query).Find(&listings).Error
+	return listings, err
+}

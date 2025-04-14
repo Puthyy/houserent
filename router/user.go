@@ -9,9 +9,7 @@ import (
 )
 
 func RegisterUser(ctx *gin.Context) {
-
 	var user model.User
-	//接口传值
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(400, gin.H{
 			"error": err.Error(),
@@ -28,7 +26,6 @@ func RegisterUser(ctx *gin.Context) {
 		return
 	}
 
-	//添加用户到数据库
 	if err := db.AddUser(&user); err != nil {
 		ctx.JSON(400, gin.H{
 			"error": err.Error(),
@@ -37,12 +34,12 @@ func RegisterUser(ctx *gin.Context) {
 	}
 	ctx.JSON(200, gin.H{
 		"message": "注册成功",
+		"user":    user,
 	})
 }
 
 func LoginUser(ctx *gin.Context) {
 	var user model.User
-
 	if err := ctx.ShouldBindJSON(&user); err != nil {
 		ctx.JSON(400, gin.H{
 			"error": err.Error(),
@@ -77,8 +74,10 @@ func LoginUser(ctx *gin.Context) {
 
 	ctx.JSON(200, gin.H{
 		"message": "登录成功",
+		"user":    u,
 	})
 }
+
 func LogoutUser(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 	session.Clear()
@@ -99,8 +98,8 @@ func UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	// 先查找用户是否存在
-	existingUser, err := db.FindUserByUsername(user.Username)
+	// 检查用户是否存在
+	existingUser, err := db.FindUserByID(user.ID)
 	if err != nil {
 		ctx.JSON(400, gin.H{
 			"error": "用户不存在",
@@ -108,8 +107,7 @@ func UpdateUser(ctx *gin.Context) {
 		return
 	}
 
-	// 保留原有的ID
-	user.ID = existingUser.ID
+	// 保留原有的一些字段
 	user.CreatedAt = existingUser.CreatedAt
 	user.UpdatedAt = existingUser.UpdatedAt
 	user.DeletedAt = existingUser.DeletedAt
@@ -122,26 +120,24 @@ func UpdateUser(ctx *gin.Context) {
 	}
 	ctx.JSON(200, gin.H{
 		"message": "更新成功",
+		"user":    user,
 	})
 }
 
 func GetUser(ctx *gin.Context) {
-	var user model.User
-	if err := ctx.ShouldBindJSON(&user); err != nil {
+	// 从请求体中获取ID
+	var request struct {
+		ID uint `json:"id" binding:"required"`
+	}
+	if err := ctx.ShouldBindJSON(&request); err != nil {
 		ctx.JSON(400, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
 
-	if user.Username == "" {
-		ctx.JSON(400, gin.H{
-			"error": "用户名不能为空",
-		})
-		return
-	}
-
-	u, err := db.FindUserByUsername(user.Username)
+	// 通过ID查找用户
+	u, err := db.FindUserByID(request.ID)
 	if err != nil {
 		ctx.JSON(400, gin.H{
 			"error": "用户不存在",
@@ -149,12 +145,17 @@ func GetUser(ctx *gin.Context) {
 		return
 	}
 
+	// 返回完整的用户信息
 	ctx.JSON(200, gin.H{
-		"username": u.Username,
-		"password": u.Password,
-		"role":     u.Role,
-		"email":    u.Email,
-		"chain_tx": u.ChainTx,
+		"id":         u.ID,
+		"username":   u.Username,
+		"password":   u.Password,
+		"role":       u.Role,
+		"email":      u.Email,
+		"chain_tx":   u.ChainTx,
+		"created_at": u.CreatedAt,
+		"updated_at": u.UpdatedAt,
+		"deleted_at": u.DeletedAt,
 	})
 }
 
@@ -167,8 +168,8 @@ func DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	// 先查找用户是否存在
-	u, err := db.FindUserByUsername(user.Username)
+	// 检查用户是否存在
+	existingUser, err := db.FindUserByID(user.ID)
 	if err != nil {
 		ctx.JSON(400, gin.H{
 			"error": "用户不存在",
@@ -176,8 +177,7 @@ func DeleteUser(ctx *gin.Context) {
 		return
 	}
 
-	// 删除用户
-	if err := db.DeleteUser(u); err != nil {
+	if err := db.DeleteUser(existingUser); err != nil {
 		ctx.JSON(400, gin.H{
 			"error": err.Error(),
 		})

@@ -34,5 +34,12 @@ func StartServer(port string) {
 	api.POST("/delete", DeleteUser)
 	api.POST("/user", GetUser)
 
+	// 房源相关接口
+	api.POST("/listings/create", CreateListing) // 创建房源
+	api.POST("/listings/update", UpdateListing) // 更新房源
+	api.POST("/listings/delete", DeleteListing) // 删除房源
+	api.POST("/listings/get", GetListing)       // 获取单个房源
+	api.POST("/listings/list", GetListings)     // 获取房源列表
+
 	r.Run(":" + port)
 }
