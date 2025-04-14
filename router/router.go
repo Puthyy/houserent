@@ -31,8 +31,8 @@ func StartServer(port string) {
 	// 需要登录后的api接口设置
 	api.POST("/logout", LogoutUser)
 	api.POST("/update", UpdateUser)
-	api.GET("/user", GetUser)
 	api.POST("/delete", DeleteUser)
+	api.POST("/user", GetUser)
 
 	r.Run(":" + port)
 }

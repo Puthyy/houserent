@@ -126,15 +126,22 @@ func UpdateUser(ctx *gin.Context) {
 }
 
 func GetUser(ctx *gin.Context) {
-	username := ctx.Query("username")
-	if username == "" {
+	var user model.User
+	if err := ctx.ShouldBindJSON(&user); err != nil {
+		ctx.JSON(400, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if user.Username == "" {
 		ctx.JSON(400, gin.H{
 			"error": "用户名不能为空",
 		})
 		return
 	}
 
-	u, err := db.FindUserByUsername(username)
+	u, err := db.FindUserByUsername(user.Username)
 	if err != nil {
 		ctx.JSON(400, gin.H{
 			"error": "用户不存在",
