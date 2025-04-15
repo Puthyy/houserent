@@ -100,13 +100,42 @@ func GetListing(ctx *gin.Context) {
 	ctx.JSON(200, gin.H{"listing": existingListing})
 }
 
-// GetListings 获取房源列表
-func GetListings(ctx *gin.Context) {
-	listings, err := db.FindAvailableListings()
+// GetListings 获取所有房源
+func GetListings(c *gin.Context) {
+	listings, err := db.FindAllListings()
 	if err != nil {
-		ctx.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, listings)
+}
+
+// GetLandlordListings 获取房东的所有房源
+func GetLandlordListings(c *gin.Context) {
+	var req struct {
+		LandlordID uint `json:"landlord_id"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
 
-	ctx.JSON(200, gin.H{"listings": listings})
+	listings, err := db.FindListingsByLandlord(req.LandlordID)
+	if err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, listings)
+}
+
+func SetupListingRoutes(r *gin.Engine) {
+	listing := r.Group("/api/listings")
+	{
+		listing.POST("/create", CreateListing)
+		listing.POST("/list", GetListings)
+		listing.POST("/update", UpdateListing)
+		listing.POST("/delete", DeleteListing)
+		listing.POST("/landlord", GetLandlordListings)
+	}
 }

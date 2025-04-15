@@ -50,5 +50,14 @@ func StartServer(port string) {
 	api.POST("/transactions/listing", GetTransactionsByListing)   // 获取房源的交易
 	api.POST("/transactions/pending", GetPendingTransactions)     // 获取待处理交易
 
+	// 评价相关路由
+	reviewGroup := api.Group("/reviews")
+	{
+		reviewGroup.POST("/create", CreateReview)       // 创建评价
+		reviewGroup.POST("/listing", GetListingReviews) // 获取房源评价
+		reviewGroup.POST("/update", UpdateReview)       // 更新评价
+		reviewGroup.POST("/delete", DeleteReview)       // 删除评价
+	}
+
 	r.Run(":" + port)
 }

@@ -1,9 +1,10 @@
 package db
 
 import (
+	"houserent/model"
+
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"houserent/model"
 )
 
 var Db *gorm.DB
@@ -23,6 +24,10 @@ func InitDb() error {
 		return err
 	}
 	err = Db.AutoMigrate(&model.Transaction{})
+	if err != nil {
+		return err
+	}
+	err = Db.AutoMigrate(&model.Review{})
 	if err != nil {
 		return err
 	}
