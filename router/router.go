@@ -41,5 +41,14 @@ func StartServer(port string) {
 	api.POST("/listings/get", GetListing)       // 获取单个房源
 	api.POST("/listings/list", GetListings)     // 获取房源列表
 
+	// 交易相关接口
+	api.POST("/transaction/create", CreateTransaction)            // 创建交易
+	api.POST("/transaction/update", UpdateTransaction)            // 更新交易
+	api.POST("/transaction/get", GetTransaction)                  // 获取单个交易
+	api.POST("/transactions/landlord", GetTransactionsByLandlord) // 获取房东的交易
+	api.POST("/transactions/tenant", GetTransactionsByTenant)     // 获取租客的交易
+	api.POST("/transactions/listing", GetTransactionsByListing)   // 获取房源的交易
+	api.POST("/transactions/pending", GetPendingTransactions)     // 获取待处理交易
+
 	r.Run(":" + port)
 }

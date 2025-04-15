@@ -22,6 +22,10 @@ func InitDb() error {
 	if err != nil {
 		return err
 	}
+	err = Db.AutoMigrate(&model.Transaction{})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
