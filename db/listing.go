@@ -59,7 +59,10 @@ func FindAllListings() ([]model.Listing, error) {
 // FindListingsByLandlord 获取房东的所有房源
 func FindListingsByLandlord(landlordID uint) ([]model.Listing, error) {
 	var listings []model.Listing
-	if err := Db.Preload("Reviews").Where("landlord_id = ?", landlordID).Find(&listings).Error; err != nil {
+	if err := Db.Preload("Reviews").
+		Where("landlord_id = ?", landlordID).
+		Order("created_at DESC").
+		Find(&listings).Error; err != nil {
 		return nil, err
 	}
 	return listings, nil

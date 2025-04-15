@@ -113,20 +113,44 @@ func GetListings(c *gin.Context) {
 // GetLandlordListings 获取房东的所有房源
 func GetLandlordListings(c *gin.Context) {
 	var req struct {
-		LandlordID uint `json:"landlord_id"`
+		LandlordID uint `json:"landlord_id" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{
+			"code":    400,
+			"message": "参数错误",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	// 验证房东ID是否有效
+	if req.LandlordID == 0 {
+		c.JSON(400, gin.H{
+			"code":    400,
+			"message": "房东ID不能为空",
+		})
 		return
 	}
 
 	listings, err := db.FindListingsByLandlord(req.LandlordID)
 	if err != nil {
-		c.JSON(400, gin.H{"error": err.Error()})
+		c.JSON(500, gin.H{
+			"code":    500,
+			"message": "获取房源列表失败",
+			"error":   err.Error(),
+		})
 		return
 	}
 
-	c.JSON(200, listings)
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "获取成功",
+		"data": gin.H{
+			"total":    len(listings),
+			"listings": listings,
+		},
+	})
 }
 
 func SetupListingRoutes(r *gin.Engine) {
