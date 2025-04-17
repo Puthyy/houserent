@@ -71,7 +71,7 @@ func LoginUser(ctx *gin.Context) {
 		ctx.JSON(500, gin.H{"error": "Session保存失败"})
 		return
 	}
-
+	u.Password = "******"
 	ctx.JSON(200, gin.H{
 		"message": "登录成功",
 		"user":    u,
@@ -111,13 +111,14 @@ func UpdateUser(ctx *gin.Context) {
 	user.CreatedAt = existingUser.CreatedAt
 	user.UpdatedAt = existingUser.UpdatedAt
 	user.DeletedAt = existingUser.DeletedAt
-
+	user.Password = existingUser.Password
 	if err := db.UpdateUser(&user); err != nil {
 		ctx.JSON(400, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
+	user.Password = "******"
 	ctx.JSON(200, gin.H{
 		"message": "更新成功",
 		"user":    user,
@@ -149,7 +150,7 @@ func GetUser(ctx *gin.Context) {
 	ctx.JSON(200, gin.H{
 		"id":         u.ID,
 		"username":   u.Username,
-		"password":   u.Password,
+		"password":   "******",
 		"role":       u.Role,
 		"email":      u.Email,
 		"chain_tx":   u.ChainTx,

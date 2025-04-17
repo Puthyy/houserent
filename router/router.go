@@ -4,6 +4,7 @@ import (
 	"houserent/db"
 	"houserent/middleware"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,17 @@ func StartServer(port string) {
 	// ✅ 初始化 session 存储（必须要这一步）
 	store := cookie.NewStore([]byte("secret"))
 	r.Use(sessions.Sessions("my_session", store))
+
+	// 配置 CORS - 必须在所有路由之前
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:5173"}
+	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
+	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
+	config.AllowCredentials = true
+	r.Use(cors.New(config))
+
+	// 配置静态文件服务
+	r.Static("/uploads", "./uploads")
 
 	api := r.Group("/api")
 
@@ -41,6 +53,7 @@ func StartServer(port string) {
 	api.POST("/listings/get", GetListing)               // 获取单个房源
 	api.POST("/listings/list", GetListings)             // 获取房源列表
 	api.POST("/listings/landlord", GetLandlordListings) // 获取房东的房源列表
+	api.POST("/listings/tenant", GetTenantListings)     // 获取租客的房源列表
 
 	// 交易相关接口
 	api.POST("/transaction/create", CreateTransaction)            // 创建交易

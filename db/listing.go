@@ -67,3 +67,15 @@ func FindListingsByLandlord(landlordID uint) ([]model.Listing, error) {
 	}
 	return listings, nil
 }
+
+// FindListingsByTenant 获取租客的所有房源
+func FindListingsByTenant(tenantID uint) ([]model.Listing, error) {
+	var listings []model.Listing
+	if err := Db.Preload("Reviews").
+		Where("tenant_id = ?", tenantID).
+		Order("created_at DESC").
+		Find(&listings).Error; err != nil {
+		return nil, err
+	}
+	return listings, nil
+}

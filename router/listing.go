@@ -153,6 +153,49 @@ func GetLandlordListings(c *gin.Context) {
 	})
 }
 
+// GetTenantListings 获取租客的所有房源
+func GetTenantListings(c *gin.Context) {
+	var req struct {
+		TenantID uint `json:"tenant_id" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{
+			"code":    400,
+			"message": "参数错误",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	// 验证租客ID是否有效
+	if req.TenantID == 0 {
+		c.JSON(400, gin.H{
+			"code":    400,
+			"message": "租客ID不能为空",
+		})
+		return
+	}
+
+	listings, err := db.FindListingsByTenant(req.TenantID)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"code":    500,
+			"message": "获取房源列表失败",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"code":    200,
+		"message": "获取成功",
+		"data": gin.H{
+			"total":    len(listings),
+			"listings": listings,
+		},
+	})
+}
+
 func SetupListingRoutes(r *gin.Engine) {
 	listing := r.Group("/api/listings")
 	{
@@ -161,5 +204,6 @@ func SetupListingRoutes(r *gin.Engine) {
 		listing.POST("/update", UpdateListing)
 		listing.POST("/delete", DeleteListing)
 		listing.POST("/landlord", GetLandlordListings)
+		listing.POST("/tenant", GetTenantListings)
 	}
 }
