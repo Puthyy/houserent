@@ -2,6 +2,7 @@ package router
 
 import (
 	"houserent/db"
+	"houserent/handlers"
 	"houserent/middleware"
 
 	"github.com/gin-contrib/cors"
@@ -72,6 +73,10 @@ func StartServer(port string) {
 		reviewGroup.POST("/update", UpdateReview)       // 更新评价
 		reviewGroup.POST("/delete", DeleteReview)       // 删除评价
 	}
+
+	// 上传相关路由
+	api.POST("/upload", handlers.UploadImage)
+	api.Static("/uploads", "./uploads")
 
 	r.Run(":" + port)
 }
